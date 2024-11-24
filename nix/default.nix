@@ -14,9 +14,5 @@ tmuxPlugins.mkTmuxPlugin {
     (python3.withPackages (ps: with ps; [ pyyaml ]))
   ];
   src = lib.cleanSource ../.;
-  preInstall = ''
-    rm -rf plugin/pyyaml
-    ln -s ${python3.pkgs.pyyaml.src} plugin/pyyaml
-  '';
   rtpFilePath = "plugin.sh.tmux";
 }

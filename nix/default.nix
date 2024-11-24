@@ -9,7 +9,10 @@
 tmuxPlugins.mkTmuxPlugin {
   inherit version;
   pluginName = "tmux-which-key";
-  propagatedBuildInputs = [check-jsonschema (python3.withPackages (ps: with ps; [pyyaml]))];
+  propagatedBuildInputs = [
+    check-jsonschema
+    (python3.withPackages (ps: with ps; [ pyyaml ]))
+  ];
   src = lib.cleanSource ../.;
   preInstall = ''
     rm -rf plugin/pyyaml

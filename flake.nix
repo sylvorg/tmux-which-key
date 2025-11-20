@@ -65,7 +65,7 @@
           # agnostic ones like nixosModule and system-enumerating ones, although
           # those are more easily expressed in perSystem.
           homeManagerModules = rec {
-            default = import ./nix/home-manager.nix;
+            default = import ./nix/home-manager.nix self;
             tmux-which-key = default;
           };
         };

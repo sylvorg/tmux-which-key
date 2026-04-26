@@ -14,6 +14,15 @@ in
   options.programs.tmux.tmux-which-key = {
     enable = lib.mkEnableOption "tmux-which-key";
 
+    placement = lib.mkOption {
+      type = lib.types.enum [
+        "init"
+        "config"
+      ];
+      default = "config";
+      description = "Whether to be placed with the `init' or the `config'.";
+    };
+
     package = lib.mkOption {
       type = with lib.types; nullOr package;
       default = defaultPackage;
@@ -72,21 +81,31 @@ in
           ''
             python3 "${cfg.package}/share/tmux-plugins/tmux-which-key/plugin/build.py" ${configYaml} $out
           '';
-    in
-    lib.mkIf cfg.enable {
-      xdg = {
-        configFile."${pluginPath}/config.yaml".source = configYaml;
-        dataFile."${pluginPath}/init.tmux".source = configTmux;
-      };
-      programs.tmux.plugins = [
+      plugins = [
         {
           plugin = cfg.package;
           extraConfig = ''
-            set -g @tmux-which-key-xdg-enable 1;
+            set -g @tmux-which-key-xdg-enable 1
             set -g @tmux-which-key-disable-autobuild 1
             set -g @tmux-which-key-xdg-plugin-path "${pluginPath}"
           '';
         }
       ];
-    };
+    in
+    lib.mkIf cfg.enable (
+      lib.mkMerge [
+        {
+          xdg = {
+            configFile."${pluginPath}/config.yaml".source = configYaml;
+            dataFile."${pluginPath}/init.tmux".source = configTmux;
+          };
+        }
+        (lib.mkIf (cfg.placement == "init") {
+          programs.tmux.init.plugins = plugins;
+        })
+        (lib.mkIf (cfg.placement == "config") {
+          programs.tmux.config.plugins = plugins;
+        })
+      ]
+    );
 }

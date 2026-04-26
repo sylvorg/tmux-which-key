@@ -242,13 +242,13 @@ class Menu(object):
 class Config(object):
     def __init__(
         self,
-        command_alias_start_index: int,
-        keybindings: dict,
-        title: dict,
-        position: dict,
-        custom_variables: List[dict],
-        macros: List[dict],
         items: List[dict],
+        keybindings: dict,
+        command_alias_start_index: int = 200,
+        title: None | dict = None,
+        position: None | dict = None,
+        custom_variables: None | dict = None,
+        macros: None | List[dict] = None,
     ) -> None:
         # Aliases must start at 200 or greater because the tmux manpage examples
         # start at 100, so we assume 100-199 may already be in use.
@@ -258,7 +258,15 @@ class Config(object):
         self.command_alias_start_index = command_alias_start_index
 
         self.keybindings = Keybindings(**keybindings)
+
+        title = {
+            "style": "align=centre,bold",
+            "prefix": "tmux",
+            "prefix_style": "fg=green,align=centre,bold",
+        } | (title or {})
         self.title = title
+
+        position = {"x": "R", "y": "P"} | (position or {})
         self.position = Position(**position)
 
         opts = {
@@ -270,10 +278,11 @@ class Config(object):
             "wk_cfg_pos_x": self.position.x,
             "wk_cfg_pos_y": self.position.y,
         }
-        self.user_options = [UserOption(name=k, value=opts[k]) for k in opts if opts[k]]
+        self.user_options = [UserOption(name=k, value=v) for k, v in opts.items() if v]
 
+        custom_variables = custom_variables or {}
         self.custom_variables = [
-            CustomVariable(v["name"], v["value"]) for v in custom_variables
+            CustomVariable(k, v) for k, v in custom_variables.items()
         ]
 
         macros = [
@@ -282,7 +291,7 @@ class Config(object):
                 "name": "show-wk-menu-root",
                 "commands": ["#{@wk_cmd_show} #{@wk_menu_root}"],
             },
-        ] + macros
+        ] + (macros or [])
         self.macros = [
             Macro(
                 self.command_alias_start_index + i,

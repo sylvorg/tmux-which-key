@@ -101,10 +101,10 @@ in
           };
         }
         (lib.mkIf (cfg.placement == "init") {
-          programs.tmux.init.plugins = plugins;
+          programs.tmux.init.plugins = lib.mkAfter plugins;
         })
         (lib.mkIf (cfg.placement == "config") {
-          programs.tmux.config.plugins = plugins;
+          programs.tmux.config.plugins = lib.mkAfter plugins;
         })
       ]
     );
